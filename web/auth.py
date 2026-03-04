@@ -56,7 +56,8 @@ async def discord_oauth_callback(code: str, redirect_uri: str) -> dict:
             timeout=10,
         )
         if token_resp.status_code != 200:
-            raise HTTPException(400, "Discord auth failed")
+            err_body = token_resp.text[:200] if token_resp.text else ""
+            raise HTTPException(400, f"Discord auth failed: {err_body or token_resp.status_code}")
 
         token_data = token_resp.json()
         access_token = token_data.get("access_token")

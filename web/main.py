@@ -192,11 +192,22 @@ async def upload_page(request: Request):
     )
 
 
+def _redirect_uri(request: Request) -> str:
+    """Build OAuth redirect URI. Respect X-Forwarded-* when behind proxy (Render, etc)."""
+    scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
+    if "," in scheme:
+        scheme = scheme.split(",")[0].strip()
+    host = request.headers.get("x-forwarded-host", request.url.netloc)
+    if "," in host:
+        host = host.split(",")[0].strip()
+    return f"{scheme}://{host}/auth/callback"
+
+
 # ---- Auth ----
 @app.get("/auth/discord")
 async def auth_discord(request: Request):
     """Redirect to Discord OAuth."""
-    redirect_uri = f"{request.url.scheme}://{request.url.netloc}/auth/callback"
+    redirect_uri = _redirect_uri(request)
     url, _ = _auth_url(redirect_uri)
     return RedirectResponse(url)
 
@@ -206,7 +217,7 @@ async def auth_callback(request: Request, code: str | None = None):
     """Handle Discord OAuth callback."""
     if not code:
         raise HTTPException(400, "Missing code")
-    redirect_uri = f"{request.url.scheme}://{request.url.netloc}/auth/callback"
+    redirect_uri = _redirect_uri(request)
     user = await discord_oauth_callback(code, redirect_uri)
     response = RedirectResponse(url="/", status_code=302)
     set_session(response, user["id"], user.get("display_name") or user.get("username", ""))
