@@ -96,7 +96,7 @@ def page(
         mgmt = '<li><a href="/management">Management</a></li>' if is_management else ''
         auth_nav = f'<li><a href="/register">Register</a></li>{mgmt}<li class="nav-user"><span>{escape(user_display)}</span> <a href="/auth/logout">Logout</a></li>'
     else:
-        auth_nav = '<li><a href="/auth/discord">Login</a></li>'
+        auth_nav = '<li><a href="/auth/discord" class="nav-login">Login with Discord</a></li>'
     return (
         LAYOUT_HEAD.format(
             title=safe_title,

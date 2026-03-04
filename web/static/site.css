@@ -234,6 +234,16 @@ body.nav-open {
   box-shadow: inset 0 0 0 1px rgba(88, 166, 255, 0.25);
 }
 
+.nav-links a.nav-login {
+  background: rgba(88, 166, 255, 0.18);
+  color: var(--accent);
+  border: 1px solid rgba(88, 166, 255, 0.4);
+}
+.nav-links a.nav-login:hover {
+  background: rgba(88, 166, 255, 0.28);
+  border-color: var(--accent);
+}
+
 /* Main content */
 main {
   max-width: 1200px;
