@@ -1,0 +1,35 @@
+<svg width="1080" height="360" viewBox="0 0 1080 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="540" y1="0" x2="540" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#152134"/>
+      <stop offset="1" stop-color="#0D1623"/>
+    </linearGradient>
+    <linearGradient id="line" x1="0" y1="0" x2="1080" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#58A6FF"/>
+      <stop offset="1" stop-color="#5EEAD4"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="1078" height="358" rx="24" fill="url(#bg)" stroke="#2A4566"/>
+  <rect x="46" y="54" width="268" height="252" rx="14" fill="#0F1A29" stroke="#35567F"/>
+  <text x="78" y="94" fill="#9EC7F7" font-family="Arial, sans-serif" font-size="24" font-weight="700">Draft Pool</text>
+  <rect x="78" y="118" width="204" height="28" rx="8" fill="#17304B"/>
+  <rect x="78" y="156" width="204" height="28" rx="8" fill="#17304B"/>
+  <rect x="78" y="194" width="204" height="28" rx="8" fill="#17304B"/>
+  <rect x="78" y="232" width="204" height="28" rx="8" fill="#17304B"/>
+  <rect x="406" y="72" width="288" height="216" rx="14" fill="#0F1A29" stroke="#35567F"/>
+  <text x="438" y="112" fill="#9EC7F7" font-family="Arial, sans-serif" font-size="24" font-weight="700">Season Board</text>
+  <rect x="438" y="136" width="224" height="20" rx="6" fill="#1C3551"/>
+  <rect x="438" y="166" width="160" height="20" rx="6" fill="#1C3551"/>
+  <rect x="438" y="196" width="200" height="20" rx="6" fill="#1C3551"/>
+  <rect x="438" y="226" width="184" height="20" rx="6" fill="#1C3551"/>
+  <rect x="786" y="54" width="248" height="252" rx="14" fill="#0F1A29" stroke="#35567F"/>
+  <text x="818" y="94" fill="#9EC7F7" font-family="Arial, sans-serif" font-size="24" font-weight="700">Standings</text>
+  <circle cx="840" cy="144" r="12" fill="#5EEAD4"/>
+  <rect x="864" y="134" width="132" height="20" rx="6" fill="#1C3551"/>
+  <circle cx="840" cy="182" r="12" fill="#58A6FF"/>
+  <rect x="864" y="172" width="132" height="20" rx="6" fill="#1C3551"/>
+  <circle cx="840" cy="220" r="12" fill="#7DD3FC"/>
+  <rect x="864" y="210" width="132" height="20" rx="6" fill="#1C3551"/>
+  <path d="M314 180H406" stroke="url(#line)" stroke-width="3" stroke-opacity="0.65"/>
+  <path d="M694 180H786" stroke="url(#line)" stroke-width="3" stroke-opacity="0.65"/>
+</svg>

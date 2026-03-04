@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 140" role="img" aria-labelledby="title desc">
+  <title id="title">Crossbar League Logo</title>
+  <desc id="desc">Crossbar League emblem and wordmark with Rocket League inspired goal frame, ball and striker silhouette.</desc>
+  <defs>
+    <linearGradient id="panelGradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#18253A"/>
+      <stop offset="1" stop-color="#0F1624"/>
+    </linearGradient>
+    <linearGradient id="frameGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#76BBFF"/>
+      <stop offset="1" stop-color="#3F89DA"/>
+    </linearGradient>
+    <linearGradient id="crossbarGradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FF8E3A"/>
+      <stop offset="1" stop-color="#FF6A00"/>
+    </linearGradient>
+    <linearGradient id="ballGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#CBD5E1"/>
+    </linearGradient>
+    <linearGradient id="carGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#72B8FF"/>
+      <stop offset="1" stop-color="#3D84D4"/>
+    </linearGradient>
+  </defs>
+
+  <g id="crossbar-mark" transform="translate(10,10)" shape-rendering="geometricPrecision">
+    <rect x="0" y="0" width="120" height="120" rx="24" fill="url(#panelGradient)" stroke="#334766" stroke-width="2"/>
+    <path d="M11 91c25-19 52-19 98 0v18H11z" fill="#0A111C" opacity="0.85"/>
+
+    <rect x="22" y="26" width="76" height="8" rx="4" fill="url(#crossbarGradient)"/>
+    <rect x="22" y="26" width="8" height="46" rx="4" fill="url(#frameGradient)"/>
+    <rect x="90" y="26" width="8" height="46" rx="4" fill="url(#frameGradient)"/>
+
+    <circle cx="60" cy="78" r="11" fill="url(#ballGradient)"/>
+    <path d="M54 72l6-3 6 3v7l-6 3-6-3z" fill="#AEBACB"/>
+    <path d="M60 67l3 2-3 2-3-2z" fill="#94A3B8"/>
+
+    <path d="M28 95c8-8 15-11 28-11h18c6 0 10 2 14 6l10 8H28z" fill="url(#carGradient)"/>
+    <circle cx="45" cy="103" r="5" fill="#0A0E14"/>
+    <circle cx="87" cy="103" r="5" fill="#0A0E14"/>
+    <circle cx="45" cy="103" r="2" fill="#6C7684"/>
+    <circle cx="87" cy="103" r="2" fill="#6C7684"/>
+  </g>
+
+  <g id="crossbar-wordmark" transform="translate(150,44)">
+    <text x="0" y="28" fill="#E6EDF3" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="36" font-weight="800" letter-spacing="1.5">CROSSBAR</text>
+    <text x="2" y="62" fill="#95A2B1" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="3">LEAGUE</text>
+    <rect x="2" y="70" width="338" height="3" rx="1.5" fill="#2A3342"/>
+    <rect x="2" y="70" width="128" height="3" rx="1.5" fill="#58A6FF"/>
+  </g>
+</svg>

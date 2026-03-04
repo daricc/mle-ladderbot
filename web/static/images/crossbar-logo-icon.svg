@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="title desc">
+  <title id="title">Crossbar League Mark</title>
+  <desc id="desc">Compact Crossbar League icon optimized for mobile navigation and small-size rendering.</desc>
+  <defs>
+    <linearGradient id="iconPanelGradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#18253A"/>
+      <stop offset="1" stop-color="#0F1624"/>
+    </linearGradient>
+    <linearGradient id="iconFrameGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7AC1FF"/>
+      <stop offset="1" stop-color="#3E8AD8"/>
+    </linearGradient>
+    <linearGradient id="iconCrossbarGradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FF9446"/>
+      <stop offset="1" stop-color="#FF6F0F"/>
+    </linearGradient>
+    <linearGradient id="iconBallGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#CBD5E1"/>
+    </linearGradient>
+    <linearGradient id="iconCarGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#72B8FF"/>
+      <stop offset="1" stop-color="#3D84D4"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="120" height="120" rx="24" fill="url(#iconPanelGradient)" stroke="#334766" stroke-width="2"/>
+  <path d="M11 91c25-19 52-19 98 0v18H11z" fill="#0A111C" opacity="0.85"/>
+
+  <rect x="22" y="26" width="76" height="8" rx="4" fill="url(#iconCrossbarGradient)"/>
+  <rect x="22" y="26" width="8" height="46" rx="4" fill="url(#iconFrameGradient)"/>
+  <rect x="90" y="26" width="8" height="46" rx="4" fill="url(#iconFrameGradient)"/>
+
+  <circle cx="60" cy="78" r="11" fill="url(#iconBallGradient)"/>
+  <path d="M54 72l6-3 6 3v7l-6 3-6-3z" fill="#AEBACB"/>
+  <path d="M60 67l3 2-3 2-3-2z" fill="#94A3B8"/>
+
+  <path d="M28 95c8-8 15-11 28-11h18c6 0 10 2 14 6l10 8H28z" fill="url(#iconCarGradient)"/>
+  <circle cx="45" cy="103" r="5" fill="#0A0E14"/>
+  <circle cx="87" cy="103" r="5" fill="#0A0E14"/>
+  <circle cx="45" cy="103" r="2" fill="#6C7684"/>
+  <circle cx="87" cy="103" r="2" fill="#6C7684"/>
+</svg>

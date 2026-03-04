@@ -1,0 +1,8 @@
+.env
+ladder.db
+*.db
+__pycache__/
+bin/
+*.pyc
+.venv/
+venv/

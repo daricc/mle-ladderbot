@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MLE Replay Parser</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="card">
+    <h1>MLE Replay Parser</h1>
+    <p class="subtitle">Upload your Rocket League .replay file to get stats & insights</p>
+
+    <form id="upload-form">
+      <label class="dropzone" id="dropzone">
+        <input type="file" name="file" accept=".replay" id="file-input">
+        <div class="icon">🎮</div>
+        <p>Drop your .replay file here or click to browse</p>
+        <p style="font-size: 0.8rem; margin-top: 0.5rem;">Max 25MB • Goals, assists, saves, shots, score</p>
+      </label>
+
+      <div class="form-row">
+        <button type="submit" class="btn btn-primary" id="submit-btn" disabled>
+          Parse Replay
+        </button>
+      </div>
+    </form>
+
+    <div id="error" class="error" style="display: none;"></div>
+  </div>
+
+  <script>
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('file-input');
+    const form = document.getElementById('upload-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const errorEl = document.getElementById('error');
+
+    function showError(msg) {
+      errorEl.textContent = msg;
+      errorEl.style.display = 'block';
+    }
+    function hideError() {
+      errorEl.style.display = 'none';
+    }
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length && files[0].name.toLowerCase().endsWith('.replay')) {
+        fileInput.files = files;
+        submitBtn.disabled = false;
+        hideError();
+      } else {
+        showError('Please drop a .replay file');
+      }
+    });
+
+    fileInput.addEventListener('change', () => {
+      submitBtn.disabled = !fileInput.files.length;
+      hideError();
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!fileInput.files.length) return;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span> Parsing...';
+      hideError();
+
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          throw new Error(data.detail || data.message || `Error ${res.status}`);
+        }
+
+        window.location.href = data.url || `/replay/${data.replay_id}`;
+      } catch (err) {
+        showError(err.message || 'Upload failed. Try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Parse Replay';
+      }
+    });
+  </script>
+</body>
+</html>
