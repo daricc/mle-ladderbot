@@ -75,6 +75,19 @@ Parse Rocket League `.replay` files **locally** — no Ballchasing API needed. U
 
 Run migration `supabase/migrations/002_replay_stats_schema.sql` in Supabase SQL Editor to enable storage.
 
+## Site Auth & Registration
+
+The web app supports **Discord OAuth** login, **RL Tracker** linking, and **replay verification**:
+
+1. **Login**: Users sign in with Discord. Configure `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `SESSION_SECRET` in `.env`.
+2. **Register**: Link RL Tracker URL (tracker.gg/rocketleague/profile/epic/... or steam/...), then upload a replay to verify identity.
+3. **Roles**: `player` (default), `captain` (can store replays), `management` (can edit settings and assign roles).
+4. **Replay storage**: Only verified captains and management have replays written to Supabase. Others get parsed stats but no DB storage.
+
+Run migration `supabase/migrations/003_site_auth_and_roles.sql` in Supabase SQL Editor.
+
+**First management user**: Set `INITIAL_MANAGEMENT_DISCORD_IDS=your_discord_id` in env, then log in once.
+
 ## Web Replay Parser (Host Online)
 
 A standalone web app for players to upload replays without Discord:

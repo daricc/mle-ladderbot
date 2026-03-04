@@ -51,6 +51,7 @@ LAYOUT_HEAD = '''
           <li><a href="/about" class="{about_active}">About</a></li>
           <li><a href="/stats" class="{stats_active}">Stats</a></li>
           <li><a href="/upload" class="{upload_active}">Upload Replay</a></li>
+          {auth_nav}
         </ul>
       </div>
     </nav>
@@ -78,6 +79,8 @@ def page(
     og_image: str = "https://crossbarleague.gg/static/images/crossbar-logo.svg",
     noindex: bool = False,
     og_type: str = "website",
+    user_display: str | None = None,
+    is_management: bool = False,
 ) -> str:
     safe_title = escape(title, quote=True)
     safe_description = escape(description, quote=True)
@@ -89,6 +92,11 @@ def page(
     active_about = "active" if active == "about" else ""
     active_stats = "active" if active == "stats" else ""
     active_upload = "active" if active == "upload" else ""
+    if user_display:
+        mgmt = '<li><a href="/management">Management</a></li>' if is_management else ''
+        auth_nav = f'<li><a href="/register">Register</a></li>{mgmt}<li class="nav-user"><span>{escape(user_display)}</span> <a href="/auth/logout">Logout</a></li>'
+    else:
+        auth_nav = '<li><a href="/auth/discord">Login</a></li>'
     return (
         LAYOUT_HEAD.format(
             title=safe_title,
@@ -101,6 +109,7 @@ def page(
             about_active=active_about,
             stats_active=active_stats,
             upload_active=active_upload,
+            auth_nav=auth_nav,
         )
         + body
         + LAYOUT_TAIL
@@ -233,6 +242,114 @@ ABOUT_PAGE = '''
         <a href="/upload" class="btn btn-secondary">Upload a Replay</a>
       </div>
     </section>
+'''
+
+REGISTER_PAGE = '''
+    <section class="section">
+      <h1>Register</h1>
+      <p>Link your RL Tracker profile and upload a replay to verify it&apos;s you. Once verified, captains and management can add replays to the league.</p>
+      <div class="card" style="margin-top:1.5rem;">
+        <h2>1. Link RL Tracker</h2>
+        <p class="text-muted">Paste your Tracker.gg Rocket League profile URL (e.g. tracker.gg/rocketleague/profile/epic/YourName)</p>
+        <form id="tracker-form">
+          <input type="url" name="tracker_url" id="tracker-url" placeholder="https://tracker.gg/rocketleague/profile/epic/YourName" class="form-input" style="width:100%;max-width:480px;">
+          <button type="submit" class="btn btn-primary" style="margin-top:0.5rem;">Save Tracker Link</button>
+        </form>
+        <p id="tracker-status" class="meta" style="margin-top:0.5rem;"></p>
+      </div>
+      <div class="card" style="margin-top:1.5rem;">
+        <h2>2. Verify with Replay</h2>
+        <p class="text-muted">Upload a replay where you played. We&apos;ll check it matches your Tracker profile.</p>
+        <form id="verify-form">
+          <label class="dropzone" id="verify-dropzone">
+            <input type="file" name="file" accept=".replay" id="verify-file-input">
+            <div class="icon">🎮</div>
+            <p>Drop your .replay file here</p>
+          </label>
+          <button type="submit" class="btn btn-primary" id="verify-btn" disabled>Verify Identity</button>
+        </form>
+        <p id="verify-status" class="meta" style="margin-top:0.5rem;"></p>
+      </div>
+    </section>
+    <script>
+      const trackerForm = document.getElementById('tracker-form');
+      const trackerUrl = document.getElementById('tracker-url');
+      const trackerStatus = document.getElementById('tracker-status');
+      const verifyForm = document.getElementById('verify-form');
+      const verifyInput = document.getElementById('verify-file-input');
+      const verifyBtn = document.getElementById('verify-btn');
+      const verifyStatus = document.getElementById('verify-status');
+      verifyInput.addEventListener('change', () => { verifyBtn.disabled = !verifyInput.files.length; });
+      trackerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const res = await fetch('/api/register-tracker', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({url: trackerUrl.value}) });
+        const d = await res.json().catch(() => ({}));
+        trackerStatus.textContent = res.ok ? 'Saved. Now upload a replay to verify.' : (d.detail || 'Failed');
+      });
+      verifyForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!verifyInput.files.length) return;
+        const fd = new FormData(); fd.append('file', verifyInput.files[0]);
+        verifyBtn.disabled = true;
+        const res = await fetch('/api/verify-replay', { method: 'POST', body: fd });
+        const d = await res.json().catch(() => ({}));
+        verifyStatus.textContent = res.ok ? 'Verified! You can now upload replays (if you are captain or management).' : (d.detail || 'Verification failed. Make sure the replay contains you.');
+        verifyBtn.disabled = false;
+      });
+    </script>
+'''
+
+MANAGEMENT_PAGE = '''
+    <section class="section">
+      <h1>Management</h1>
+      <p>Edit league settings and manage user roles. Only management can access this.</p>
+      <div class="card" style="margin-top:1.5rem;">
+        <h2>Announcement</h2>
+        <form id="settings-form">
+          <label><textarea name="announcement" id="setting-announcement" rows="3" style="width:100%;max-width:560px;"></textarea></label>
+          <button type="submit" class="btn btn-primary" style="margin-top:0.5rem;">Save</button>
+        </form>
+      </div>
+      <div class="card" style="margin-top:1.5rem;">
+        <h2>User Roles</h2>
+        <p class="text-muted">Set role: player, captain (can store replays), or management.</p>
+        <table class="stats-table" style="margin-top:0.5rem;">
+          <thead><tr><th>User</th><th>Tracker</th><th>Verified</th><th>Role</th><th>Action</th></tr></thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+    <script>
+      (async () => {
+        const r = await fetch('/api/league-settings');
+        if (r.ok) { const d = await r.json(); document.getElementById('setting-announcement').value = d.announcement || ''; }
+      })();
+      document.getElementById('settings-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const val = document.getElementById('setting-announcement').value;
+        await fetch('/api/league-settings', { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({announcement: val}) });
+      });
+      (async () => {
+        const r = await fetch('/api/site-users');
+        if (!r.ok) return;
+        const d = await r.json();
+        const tbody = document.getElementById('users-tbody');
+        for (const u of d.users || []) {
+          const tr = document.createElement('tr');
+          const verified = u.verified_at ? 'Yes' : 'No';
+          const roleSelect = document.createElement('select');
+          ['player','captain','management'].forEach(role => {
+            const o = document.createElement('option'); o.value = role; o.textContent = role; if (u.role === role) o.selected = true; roleSelect.appendChild(o);
+          });
+          roleSelect.addEventListener('change', async () => {
+            await fetch('/api/site-users/' + encodeURIComponent(u.discord_id) + '/role', { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({role: roleSelect.value}) });
+          });
+          tr.innerHTML = '<td>' + (u.display_name || u.discord_id) + '</td><td>' + (u.rl_identifier || '—') + '</td><td>' + verified + '</td><td></td><td></td>';
+          tr.querySelector('td:nth-child(4)').appendChild(roleSelect);
+          tbody.appendChild(tr);
+        }
+      })();
+    </script>
 '''
 
 UPLOAD_PAGE = '''

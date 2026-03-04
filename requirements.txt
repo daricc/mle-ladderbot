@@ -10,3 +10,7 @@ numpy>=1.24.0
 fastapi>=0.109.0
 uvicorn[standard]>=0.27.0
 python-multipart>=0.0.6
+
+# Auth (Discord OAuth + session)
+httpx>=0.27.0
+itsdangerous>=2.1.0

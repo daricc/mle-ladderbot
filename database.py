@@ -217,13 +217,14 @@ async def insert_replay(
     team_size: Optional[int] = None,
     duration: Optional[int] = None,
     overtime: bool = False,
+    stored_by_role: Optional[str] = None,
 ) -> int:
     """Insert a replay row, return replay_id."""
     async with pool.acquire() as conn:
         row = await conn.fetchrow(
             """
-            INSERT INTO replays (ballchasing_id, discord_uploader_id, title, map_code, playlist_id, team_size, duration, overtime)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            INSERT INTO replays (ballchasing_id, discord_uploader_id, title, map_code, playlist_id, team_size, duration, overtime, stored_by_role)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING id
             """,
             ballchasing_id,
@@ -234,6 +235,7 @@ async def insert_replay(
             team_size,
             duration,
             overtime,
+            stored_by_role,
         )
         return row["id"]
 
@@ -324,3 +326,118 @@ async def get_replay_stats_for_replay(pool: asyncpg.Pool, replay_id: int) -> lis
             replay_id,
         )
         return [dict(r) for r in rows]
+
+
+# ---- Site users & roles ----
+
+async def get_site_user(pool: asyncpg.Pool, discord_id: str) -> Optional[dict]:
+    """Fetch site user by Discord ID."""
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            "SELECT * FROM site_users WHERE discord_id = $1",
+            str(discord_id),
+        )
+        return dict(row) if row else None
+
+
+async def upsert_site_user(
+    pool: asyncpg.Pool,
+    discord_id: str,
+    display_name: Optional[str] = None,
+    avatar_url: Optional[str] = None,
+) -> dict:
+    """Create or update site user (on Discord login)."""
+    now = datetime.utcnow()
+    async with pool.acquire() as conn:
+        await conn.execute(
+            """
+            INSERT INTO site_users (discord_id, display_name, avatar_url, updated_at)
+            VALUES ($1, $2, $3, $4)
+            ON CONFLICT (discord_id) DO UPDATE SET
+                display_name = COALESCE($2, site_users.display_name),
+                avatar_url = COALESCE($3, site_users.avatar_url),
+                updated_at = $4
+            """,
+            str(discord_id),
+            display_name or "",
+            avatar_url or "",
+            now,
+        )
+    return (await get_site_user(pool, discord_id)) or {}
+
+
+async def update_site_user_rl_tracker(
+    pool: asyncpg.Pool,
+    discord_id: str,
+    rl_platform: str,
+    rl_identifier: str,
+    rl_tracker_url: str,
+) -> dict:
+    """Set RL Tracker registration. verified_at stays null until replay verification."""
+    async with pool.acquire() as conn:
+        await conn.execute(
+            """
+            UPDATE site_users SET
+                rl_platform = $2, rl_identifier = $3, rl_tracker_url = $4,
+                verified_at = NULL, updated_at = NOW()
+            WHERE discord_id = $1
+            """,
+            str(discord_id),
+            rl_platform,
+            rl_identifier,
+            rl_tracker_url,
+        )
+    return (await get_site_user(pool, discord_id)) or {}
+
+
+async def verify_site_user(pool: asyncpg.Pool, discord_id: str) -> dict:
+    """Mark user as verified (replay matched RL Tracker)."""
+    async with pool.acquire() as conn:
+        await conn.execute(
+            "UPDATE site_users SET verified_at = NOW(), updated_at = NOW() WHERE discord_id = $1",
+            str(discord_id),
+        )
+    return (await get_site_user(pool, discord_id)) or {}
+
+
+async def set_site_user_role(pool: asyncpg.Pool, discord_id: str, role: str) -> dict:
+    """Set user role. Only management can call this (enforced in API)."""
+    assert role in ("player", "captain", "management")
+    async with pool.acquire() as conn:
+        await conn.execute(
+            "UPDATE site_users SET role = $2, updated_at = NOW() WHERE discord_id = $1",
+            str(discord_id),
+            role,
+        )
+    return (await get_site_user(pool, discord_id)) or {}
+
+
+async def get_league_setting(pool: asyncpg.Pool, key: str) -> Optional[str]:
+    """Get a league setting value."""
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow("SELECT value FROM league_settings WHERE key = $1", key)
+        return row["value"] if row else None
+
+
+async def list_site_users(pool: asyncpg.Pool) -> list[dict]:
+    """List all site users. Management only."""
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(
+            "SELECT discord_id, display_name, rl_platform, rl_identifier, role, verified_at, created_at FROM site_users ORDER BY created_at DESC"
+        )
+        return [dict(r) for r in rows]
+
+
+async def set_league_setting(pool: asyncpg.Pool, key: str, value: str, updated_by_discord_id: str) -> None:
+    """Set a league setting. Only management can call (enforced in API)."""
+    async with pool.acquire() as conn:
+        await conn.execute(
+            """
+            INSERT INTO league_settings (key, value, updated_at, updated_by_discord_id)
+            VALUES ($1, $2, NOW(), $3)
+            ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW(), updated_by_discord_id = $3
+            """,
+            key,
+            value,
+            str(updated_by_discord_id),
+        )

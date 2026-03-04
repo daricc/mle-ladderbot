@@ -133,6 +133,41 @@ def _extract_properties(obj: dict, keys: list[str]) -> dict:
     return out
 
 
+def _extract_unique_id(unique_id_prop: dict) -> tuple[str, str]:
+    """
+    Extract platform and platform_id from rattletrap UniqueId structure.
+    Returns (platform, platform_id) e.g. ('steam', '76561198123456789') or ('', '').
+    """
+    if not unique_id_prop or not isinstance(unique_id_prop, dict):
+        return ("", "")
+    val = unique_id_prop.get("value")
+    if not isinstance(val, dict):
+        return ("", "")
+    # Rattletrap: UniqueId can be {value: {struct: {fields: {elements: [[name, val], ...]}}}}
+    struct = val.get("struct", {}) if isinstance(val, dict) else {}
+    fields = struct.get("fields", {}) if isinstance(struct, dict) else {}
+    elements = fields.get("elements", []) if isinstance(fields, dict) else []
+    field_map = {}
+    for item in elements:
+        if isinstance(item, list) and len(item) >= 2:
+            field_map[item[0]] = item[1]
+    # Common keys: SystemId (0=Steam, 1=PS3, 2=PS4, 3=Xbox, 4=Switch, 5=Epic), RemoteId/OnlineId
+    sys_id = _prop_val(field_map.get("SystemId", {}))
+    remote = _prop_val(field_map.get("RemoteId", {})) or _prop_val(field_map.get("OnlineId", {}))
+    if remote is None and isinstance(field_map.get("RemoteId"), dict):
+        rv = field_map["RemoteId"].get("value")
+        if isinstance(rv, dict) and "str" in rv:
+            remote = rv.get("str")
+        elif isinstance(rv, dict) and "q_word" in rv:
+            remote = str(rv.get("q_word", ""))
+    platform = ""
+    if sys_id is not None:
+        sys_map = {0: "steam", 1: "ps3", 2: "ps4", 3: "xbox", 5: "epic"}
+        platform = sys_map.get(int(sys_id), "")
+    platform_id = str(remote) if remote is not None else ""
+    return (platform, platform_id)
+
+
 def _prop_val(prop: dict) -> any:
     """Extract value from rattletrap property dict: {value: {int: 5}} or {value: {str: 'x'}}."""
     v = prop.get("value") if isinstance(prop, dict) else None
@@ -198,6 +233,8 @@ def _parse_rattletrap_header(data: dict) -> tuple[dict, list[dict]]:
             team_idx = team_idx.get("int", 0)
         team_color = "blue" if team_idx == 0 else "orange"
 
+        platform, platform_id = _extract_unique_id(field_map.get("UniqueId", {}))
+
         goals = _prop_val(field_map.get("Goals", {})) or 0
         assists = _prop_val(field_map.get("Assists", {})) or 0
         saves = _prop_val(field_map.get("Saves", {})) or 0
@@ -207,8 +244,8 @@ def _parse_rattletrap_header(data: dict) -> tuple[dict, list[dict]]:
         shot_pct = (100 * goals / shots) if shots else None
         players.append({
             "name": str(name),
-            "platform": "",
-            "platform_id": "",
+            "platform": platform or "",
+            "platform_id": platform_id or "",
             "team": team_color,
             "team_color": team_color,
             "goals": int(goals) if goals is not None else 0,
