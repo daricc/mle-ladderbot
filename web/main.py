@@ -37,14 +37,17 @@ async def get_db():
         url = os.getenv("SUPABASE_DATABASE_URL")
         if not url:
             return None
-        import asyncpg
-        _db_pool = await asyncpg.create_pool(
-            url,
-            min_size=1,
-            max_size=5,
-            command_timeout=60,
-            statement_cache_size=0,
-        )
+        try:
+            import asyncpg
+            _db_pool = await asyncpg.create_pool(
+                url,
+                min_size=1,
+                max_size=5,
+                command_timeout=60,
+                statement_cache_size=0,
+            )
+        except Exception:
+            return None
     return _db_pool
 
 

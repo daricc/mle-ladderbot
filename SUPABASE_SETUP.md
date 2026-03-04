@@ -21,3 +21,15 @@ The bot needs your **exact** database connection string from Supabase. **Never c
 Run: `python scripts/test_db.py`
 
 If it prints `OK: Connected!`, the bot will work.
+
+## Render / serverless: DNS errors
+
+If you see `socket.gaierror: Name or service not known` on Render or similar hosts, the pooler host (`aws-X-region.pooler.supabase.com`) may not resolve. Try the **direct connection** instead:
+
+```
+postgresql://postgres.[project-ref]:[YOUR-PASSWORD]@db.[project-ref].supabase.co:5432/postgres
+```
+
+Example: `postgresql://postgres.oafsyyzjqpgmijglutor:[YOUR-PASSWORD]@db.oafsyyzjqpgmijglutor.supabase.co:5432/postgres`
+
+Get the exact host from Supabase Dashboard → Settings → Database → Connection string → **Direct connection** (port 5432).
