@@ -1,4 +1,13 @@
+# Secrets - never commit
 .env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets.json
+config.local.*
+
+# Data & cache
 ladder.db
 *.db
 __pycache__/
